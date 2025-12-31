@@ -3,49 +3,22 @@
 import Image from "next/image";
 import { useState } from "react";
 
-function ComingSoonCard({
+function RoleLoginCard({
   title,
   subtitle,
+  endpoint,
+  badgeText,
 }: {
   title: string;
   subtitle: string;
+  endpoint: string;
+  badgeText: string;
 }) {
-  return (
-    <div
-      className="rounded-2xl border bg-white p-4 shadow-sm"
-      style={{ borderColor: "rgb(var(--border))" }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold" style={{ color: "rgb(var(--text))" }}>
-            {title}
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
-        </div>
-
-        <span
-          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold"
-          style={{
-            background: "rgba(var(--accent),0.10)",
-            color: "rgb(var(--accent))",
-          }}
-        >
-          Coming soon
-        </span>
-      </div>
-
-      <div className="mt-4 rounded-xl border bg-slate-50 px-3 py-3 text-sm text-slate-600"
-           style={{ borderColor: "rgb(var(--border))" }}>
-        This section will be enabled once we finish role-based logins.
-      </div>
-    </div>
-  );
-}
-
-function FarzandoLoginCard() {
   const [itsNo, setItsNo] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
   const [message, setMessage] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
@@ -54,7 +27,7 @@ function FarzandoLoginCard() {
     setStatus("loading");
     setMessage("");
 
-    const res = await fetch("/api/login/farzando", {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itsNo, password }),
@@ -69,7 +42,11 @@ function FarzandoLoginCard() {
     }
 
     setStatus("success");
-    setMessage("Login successful ✅");
+    setMessage("Login successful ✅ Redirecting...");
+
+    setTimeout(() => {
+      window.location.href = "/coming-soon";
+    }, 400);
   }
 
   return (
@@ -79,8 +56,11 @@ function FarzandoLoginCard() {
     >
       <div className="mb-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold" style={{ color: "rgb(var(--text))" }}>
-            Farzando
+          <h2
+            className="text-base font-semibold"
+            style={{ color: "rgb(var(--text))" }}
+          >
+            {title}
           </h2>
           <span
             className="rounded-full px-2.5 py-1 text-xs font-semibold"
@@ -89,12 +69,10 @@ function FarzandoLoginCard() {
               color: "rgb(var(--primary))",
             }}
           >
-            Student login
+            {badgeText}
           </span>
         </div>
-        <p className="mt-1 text-sm text-slate-600">
-          Use your ITS No and password to sign in.
-        </p>
+        <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
       </div>
 
       <form onSubmit={onSubmit} className="grid gap-3">
@@ -144,11 +122,18 @@ function FarzandoLoginCard() {
             className="rounded-xl px-3 py-2 text-sm"
             style={{
               border: `1px solid ${
-                status === "error" ? "rgba(var(--accent),0.25)" : "rgba(var(--primary),0.25)"
+                status === "error"
+                  ? "rgba(var(--accent),0.25)"
+                  : "rgba(var(--primary),0.25)"
               }`,
               background:
-                status === "error" ? "rgba(var(--accent),0.08)" : "rgba(var(--primary),0.08)",
-              color: status === "error" ? "rgb(var(--accent))" : "rgb(var(--primary))",
+                status === "error"
+                  ? "rgba(var(--accent),0.08)"
+                  : "rgba(var(--primary),0.08)",
+              color:
+                status === "error"
+                  ? "rgb(var(--accent))"
+                  : "rgb(var(--primary))",
             }}
           >
             {status === "error" ? `❌ ${message}` : message}
@@ -161,12 +146,7 @@ function FarzandoLoginCard() {
 
 export default function LoginPage() {
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: "rgb(var(--bg))",
-      }}
-    >
+    <div className="min-h-screen" style={{ backgroundColor: "rgb(var(--bg))" }}>
       {/* subtle top tint */}
       <div
         className="absolute inset-x-0 top-0 h-64"
@@ -193,22 +173,53 @@ export default function LoginPage() {
             />
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: "rgb(var(--text))" }}>
+          <h1
+            className="text-2xl font-extrabold tracking-tight"
+            style={{ color: "rgb(var(--text))" }}
+          >
             Al Madrasa Portal
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Choose your role below. (Only Farzando is enabled right now.)
+            Choose your role below and sign in with your ITS No.
           </p>
         </div>
 
-        {/* Primary first (enabled), then coming soon */}
+        {/* All roles now have real login cards */}
         <div className="grid gap-4">
-          <FarzandoLoginCard />
+          <RoleLoginCard
+            title="Farzando"
+            subtitle="Student access"
+            endpoint="/api/login/farzando"
+            badgeText="Student"
+          />
 
-          <ComingSoonCard title="Moallim" subtitle="Teacher access" />
-          <ComingSoonCard title="Admin" subtitle="Administration access" />
-          <ComingSoonCard title="Musaedeen" subtitle="Assistant access" />
-          <ComingSoonCard title="Attendance Team" subtitle="Attendance staff access" />
+          <RoleLoginCard
+            title="Moallim"
+            subtitle="Teacher access"
+            endpoint="/api/login/moallim"
+            badgeText="Teacher"
+          />
+
+          <RoleLoginCard
+            title="Admin"
+            subtitle="Administration access"
+            endpoint="/api/login/admin"
+            badgeText="Admin"
+          />
+
+          <RoleLoginCard
+            title="Musaedeen"
+            subtitle="Assistant access"
+            endpoint="/api/login/musaedeen"
+            badgeText="Assistant"
+          />
+
+          <RoleLoginCard
+            title="Attendance Team"
+            subtitle="Attendance staff access"
+            endpoint="/api/login/attendance"
+            badgeText="Attendance"
+          />
         </div>
 
         <p className="mt-8 text-center text-xs text-slate-500">
